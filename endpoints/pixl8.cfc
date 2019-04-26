@@ -21,7 +21,7 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 	property name="namePrefixes" type="string";
 
 	function init() {
-		setNamePrefixes( 'mis' );
+		setNamePrefixes( 'pixl8' );
 
 		return this;
 	}
