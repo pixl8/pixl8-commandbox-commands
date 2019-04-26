@@ -24,6 +24,6 @@ This adds the benefit of local package caching and smart version resolution alon
 This package should be installed to local CommandBox installations with:
 
 ```
-box install pixl8/pixl8-commandbox-commands.git#v0.1.1
+box install pixl8/pixl8-commandbox-commands.git#stable
 ```
 
