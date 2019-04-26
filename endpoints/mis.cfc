@@ -7,13 +7,15 @@
 *
 * I am the file endpoint.  I get packages from a local file.
 */
-component accessors="true" implements="commandbox.system.endpoints.IEndpoint" singleton {
+component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 
 	property name="consoleLogger"    inject="logbox:logger:console";
 	property name="pixl8Utils"       inject="pixl8Utils@pixl8-commandbox-commands";
 	property name="misPackageClient" inject="misPackageClient@pixl8-commandbox-commands";
-	property name="httpsResolver"    inject="commandbox.system.endpoints.HTTPS";
-	property name="httpResolver"     inject="commandbox.system.endpoints.HTTP";
+	property name="semanticVersion"  inject="provider:semanticVersion@semver";
+	property name="artifactService"  inject="ArtifactService";
+	property name='wirebox'          inject='wirebox';
+	property name="endpointService"  inject="endpointService";
 	property name="fileResolver"     inject="commandbox.system.endpoints.file";
 
 	property name="namePrefixes" type="string";
@@ -25,18 +27,38 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" si
 	}
 
 	public string function resolvePackage( required string package, boolean verbose=false ) {
-		var packageDetails = misPackageClient.resolvePackage( arguments.package );
+		var job = wirebox.getInstance( 'interactiveJob' );
+		var slug 	= parseSlug( arguments.package );
+		var version = parseVersion( arguments.package );
+		var strVersion = semanticVersion.parseVersion( version );
 
-		switch( ListFirst( packageDetails.downloadUrl ?: "", ":" ) ) {
-			case "https":
-				return httpsResolver.resolvePackage( argumentCollection=arguments, package=packageDetails.downloadUrl );
-			case "http":
-				return httpResolver.resolvePackage( argumentCollection=arguments, package=packageDetails.downloadUrl );
-			case "file":
-				return fileResolver.resolvePackage( argumentCollection=arguments, package=packageDetails.downloadUrl );
+		if( semanticVersion.isExactVersion( version ) && artifactService.artifactExists( slug, version ) && strVersion.preReleaseID != 'snapshot' ) {
+			job.addLog( "Package found in local artifacts!");
+			return fileResolver.resolvePackage( artifactService.getArtifactPath( slug, version ), arguments.verbose );
 		}
 
-		throw( "There was an error resolving a download URL for your package [#arguments.package#]. Package details: [#SerializeJson( packageDetails )#]", 'endpointException' );
+		job.addLog( "Verifying package '#slug#' in MIS, please wait..." );
+		var packageDetails = misPackageClient.resolvePackage( slug, version );
+
+		if( artifactService.artifactExists( slug, version ) || strVersion.preReleaseID == 'snapshot' ) {
+			job.addLog( "Package found in local artifacts!");
+
+			return fileResolver.resolvePackage( artifactService.getArtifactPath( slug, version ), arguments.verbose );
+
+		} else {
+			var endpointData = endpointService.resolveEndpoint( packageDetails.downloadUrl, 'fakePath', slug, version );
+
+			job.addLog( "Deferring to [#endpointData.endpointName#] endpoint for ForgeBox entry [#slug#]..." );
+
+			var packagePath = endpointData.endpoint.resolvePackage( endpointData.package, arguments.verbose );
+
+			job.addLog( "Storing download in artifact cache..." );
+
+			// Store it locally in the artfact cache
+			artifactService.createArtifact( slug, version, packagePath );
+
+			return packagePath;
+		}
 	}
 
 	/**
@@ -50,6 +72,38 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" si
 		consoleLogger.info( "not implemented!" );
 
 		return false;
+	}
+
+
+	/**
+	* Parses just the slug portion out of an endpoint ID
+	* @package The full endpointID like foo@1.0.0
+	*/
+	public function parseSlug( required string package ) {
+		var matches = REFindNoCase( "^([a-zA-Z][\w\-\.]*(?:\@(?!stable\b)(?!be\b)[a-zA-Z][\w\-]*)?)(?:\@(.+))?$", package, 1, true );
+		if ( arrayLen( matches.len ) < 2 ) {
+			throw(
+				type = "endpointException",
+				message = "Invalid slug detected.  Slugs can only contain letters, numbers, underscores, and hyphens. They may also be prepended with an @ sign for private packages"
+			);
+		}
+		return mid( package, matches.pos[ 2 ], matches.len[ 2 ] );
+	}
+
+	/**
+	* Parses just the version portion out of an endpoint ID
+	* @package The full endpointID like foo@1.0.0
+	*/
+	public function parseVersion( required string package ) {
+		var version = 'stable';
+		// foo@1.0.0
+		var matches = REFindNoCase( "^([a-zA-Z][\w\-\.]*(?:\@(?!stable\b)(?!be\b)[a-zA-Z][\w\-]*)?)(?:\@(.+))?$", package, 1, true );
+		if ( matches.pos.len() >= 3 && matches.pos[ 3 ] != 0 ) {
+			// Note this can also be a semver range like 1.2.x, >2.0.0, or 1.0.4-2.x
+			// For now I'm assuming it's a specific version
+			version = mid( package, matches.pos[ 3 ], matches.len[ 3 ] );
+		}
+		return version;
 	}
 
 }
