@@ -21,29 +21,30 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 	property name="namePrefixes" type="string";
 
 	function init() {
-		setNamePrefixes( 'mis' );
+		setNamePrefixes( 'pixl8' );
 
 		return this;
 	}
 
 	public string function resolvePackage( required string package, boolean verbose=false ) {
-		var job = wirebox.getInstance( 'interactiveJob' );
-		var slug 	= parseSlug( arguments.package );
-		var version = parseVersion( arguments.package );
+		var job        = wirebox.getInstance( 'interactiveJob' );
+		var slug 	   = parseSlug( arguments.package );
+		var artifactSlug = "pixl8:#slug#";
+		var version    = parseVersion( arguments.package );
 		var strVersion = semanticVersion.parseVersion( version );
 
-		if( semanticVersion.isExactVersion( version ) && artifactService.artifactExists( slug, version ) && strVersion.preReleaseID != 'snapshot' ) {
+		if( semanticVersion.isExactVersion( version ) && artifactService.artifactExists( artifactSlug, version ) && strVersion.preReleaseID != 'snapshot' ) {
 			job.addLog( "Package found in local artifacts!");
-			return fileResolver.resolvePackage( artifactService.getArtifactPath( slug, version ), arguments.verbose );
+			return fileResolver.resolvePackage( artifactService.getArtifactPath( artifactSlug, version ), arguments.verbose );
 		}
 
 		job.addLog( "Verifying package '#slug#' in MIS, please wait..." );
 		var packageDetails = misPackageClient.resolvePackage( slug, version );
 
-		if( artifactService.artifactExists( slug, version ) || strVersion.preReleaseID == 'snapshot' ) {
+		if( artifactService.artifactExists( artifactSlug, version ) || strVersion.preReleaseID == 'snapshot' ) {
 			job.addLog( "Package found in local artifacts!");
 
-			return fileResolver.resolvePackage( artifactService.getArtifactPath( slug, version ), arguments.verbose );
+			return fileResolver.resolvePackage( artifactService.getArtifactPath( artifactSlug, version ), arguments.verbose );
 
 		} else {
 			var endpointData = endpointService.resolveEndpoint( packageDetails.downloadUrl, 'fakePath', slug, version );
@@ -55,7 +56,7 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 			job.addLog( "Storing download in artifact cache..." );
 
 			// Store it locally in the artfact cache
-			artifactService.createArtifact( slug, version, packagePath );
+			artifactService.createArtifact( artifactSlug, version, packagePath );
 
 			return packagePath;
 		}
