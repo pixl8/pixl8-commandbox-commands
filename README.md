@@ -8,6 +8,7 @@ The purpose of this package is to provide common Pixl8 devops commands to the bo
 
 * `pixl8 mis setCredentials` - you will be supplied an API key from MIS
 * `pixl8 mis setEndpoint` - used to set the MIS endpoint (see internal Pixl8 Documentation)
+* `pixl8 mis publish <zipfile>` - used to publish packages
 
 ## Forgebox endpoint
 
