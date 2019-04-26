@@ -18,6 +18,6 @@ component {
 	}
 
 	public string function getMisEndpoint() {
-		return configService.getSetting( "pixl8credentials.endpoint", "https://mis.pixl8.london" );
+		return configService.getSetting( "pixl8credentials.endpoint", "" );
 	}
 }
