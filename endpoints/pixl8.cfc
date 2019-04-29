@@ -43,7 +43,7 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 		job.addLog( "Verifying package '#slug#' in MIS, please wait..." );
 		var packageDetails = misPackageClient.resolvePackage( slug, version );
 
-		if( artifactService.artifactExists( artifactSlug, version ) || strVersion.preReleaseID == 'snapshot' ) {
+		if( artifactService.artifactExists( artifactSlug, version ) && strVersion.preReleaseID != 'snapshot' ) {
 			job.addLog( "Package found in local artifacts!");
 
 			return fileResolver.resolvePackage( artifactService.getArtifactPath( artifactSlug, version ), arguments.verbose );
