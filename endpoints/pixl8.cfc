@@ -58,7 +58,9 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 			job.addLog( "Storing download in artifact cache..." );
 
 			// Store it locally in the artfact cache
-			artifactService.createArtifact( artifactSlug, version, packagePath );
+			if ( strVersion.preReleaseID != 'snapshot' ) {
+				artifactService.createArtifact( artifactSlug, version, packagePath );
+			}
 
 			return packagePath;
 		}
