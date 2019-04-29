@@ -27,11 +27,13 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 	}
 
 	public string function resolvePackage( required string package, boolean verbose=false ) {
-		var job        = wirebox.getInstance( 'interactiveJob' );
-		var slug 	   = parseSlug( arguments.package );
+		wirebox.getInstance( "interceptorService" ).registerInterceptor( this );
+
+		var job          = wirebox.getInstance( 'interactiveJob' );
+		var slug         = parseSlug( arguments.package );
 		var artifactSlug = "pixl8:#slug#";
-		var version    = parseVersion( arguments.package );
-		var strVersion = semanticVersion.parseVersion( version );
+		var version      = parseVersion( arguments.package );
+		var strVersion   = semanticVersion.parseVersion( version );
 
 		if( semanticVersion.isExactVersion( version ) && artifactService.artifactExists( artifactSlug, version ) && strVersion.preReleaseID != 'snapshot' ) {
 			job.addLog( "Package found in local artifacts!");
@@ -59,6 +61,17 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 			artifactService.createArtifact( artifactSlug, version, packagePath );
 
 			return packagePath;
+		}
+	}
+
+	public void function onInstall( event, interceptData ) {
+		var packageId = interceptData.endpointData.id ?: "";
+		if ( packageId.startsWith( "pixl8:" ) && !packageId.find( "@" ) ) {
+			var version = interceptData.artifactDescriptor.version ?: "";
+
+			if ( Len( Trim( version ) ) ) {
+				interceptData.endpointData.id &= "@^#version#";
+			}
 		}
 	}
 
