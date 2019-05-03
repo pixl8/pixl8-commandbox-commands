@@ -59,7 +59,7 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 
 			// Store it locally in the artfact cache
 			if ( strVersion.preReleaseID != 'snapshot' ) {
-				artifactService.createArtifact( artifactSlug, version, packagePath );
+				artifactService.createArtifact( artifactSlug, packageDetails.version, packagePath );
 			}
 
 			return packagePath;
