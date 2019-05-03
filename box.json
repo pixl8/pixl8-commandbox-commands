@@ -1,7 +1,7 @@
 {
     "name":"Pixl8 CommandBox Commands",
-    "version":"0.1.6",
-    "location":"pixl8/pixl8-commandbox-commands.git#v0.1.6",
+    "version":"0.1.7",
+    "location":"pixl8/pixl8-commandbox-commands.git#v0.1.7",
     "author":"Pixl8 Interactive",
     "type":"commandbox-modules",
     "homepage":"https://gitlab.pixl8.london/utilities/pixl8-commandbox-commands",
