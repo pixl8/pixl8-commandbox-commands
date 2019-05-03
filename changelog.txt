@@ -1,0 +1,34 @@
+# Changelog
+
+## v0.1.7
+
+* Store the actual version number in the artifacts cache, not 'stable', or 'be', etc.
+
+## v0.1.6
+
+* Only put into the cache when not a snapshot release
+
+## v0.1.5
+
+* Tweak logic so that pre-release versions are never fetched from cache (rather than always leading to not being able to install pre-release versions)
+
+## v0.1.4
+
+* Ensure that box install pixl8:my-package adds a @^x.x.x to set a sensible default stable version to box.json
+
+## v0.1.3
+
+* Add a publish package method
+
+## v0.1.2
+
+* Do not use any specific API enpoints in the system
+* Rename endpoint to pixl8
+
+## v0.1.1
+
+* Fixing version numbers
+
+## v0.1.0
+
+* Initial commit (custom forgebox endpoint to interact with MIS API)
