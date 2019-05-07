@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.8
+
+* Fix issue with installing packages that already exist in the artifacts cache. Fixes errors like 'Duplicate entry: build/', etc. during box install.
+
 ## v0.1.7
 
 * Store the actual version number in the artifacts cache, not 'stable', or 'be', etc.
