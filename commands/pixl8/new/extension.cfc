@@ -26,9 +26,17 @@ component {
 		if ( !DirectoryExists( arguments.directory ) ) {
 			return _printError( "Directory, [#arguments.directory#], does not exist" );
 		}
+		var requireStatic = "";
+		do {
+			requireStatic = shell.ask( "Will your extension require CSS/JS? (Y/N): " );
+		} while( requireStatic != "Y" && requireStatic != "N" );
 
 		_unpackSkeleton( arguments.directory );
 		_replacePlaceholdersWithArgs( argumentCollection=arguments );
+
+		if ( !requireStatic == "Y" ) {
+			DirectoryDelete( arguments.directory & "/assets", true );
+		}
 
 		print.line();
 		print.greenLine( "************************************************" );
@@ -68,6 +76,7 @@ component {
 			, arguments.directory & "/box.json"
 			, arguments.directory & "/.gitlab-ci.yml"
 			, arguments.directory & "/README.md"
+			, arguments.directory & "/assets/package.json"
 		];
 
 		for( var filePath in filePaths ) {
