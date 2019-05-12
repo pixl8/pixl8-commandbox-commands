@@ -1,0 +1,20 @@
+{
+    "name":"PresideCMS Extension: EXTENSIONNAME",
+    "type":"preside-extensions",
+    "version":"VERSION_NUMBER",
+    "private":true,
+    "author":"Pixl8 Interactive",
+    "directory":"application/extensions",
+    "repository":{
+        "type":"git",
+        "URL":"EXTENSIONURL"
+    },
+    "slug":"preside-ext-EXTENSIONSLUG",
+    "projectURL":"EXTENSIONURL",
+    "ignore":[
+        ".git/*",
+        ".gitignore",
+        ".gitlab-ci.yml",
+        ".twgit_features_subject"
+    ]
+}

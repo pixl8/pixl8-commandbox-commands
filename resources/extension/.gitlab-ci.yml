@@ -1,0 +1,15 @@
+image: gitlab.pixl8.london:5005/utilities/pixl8-ci-env-docker-image
+
+before_script:
+  - box slack set defaults channel="BUILDCHANNEL" title="EXTENSIONNAME Gitlab build ${CI_JOB_ID} (${CI_COMMIT_REF_NAME})" titleLink="${CI_PROJECT_URL}/builds/${CI_JOB_ID}" author="${GITLAB_USER_EMAIL}"
+
+stages:
+  - package
+
+package:
+    stage: package
+    only:
+      - /v[0-9].*/
+      - /release\-\.*/
+    script:
+      - publishpackage
