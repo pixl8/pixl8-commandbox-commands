@@ -31,6 +31,8 @@ component {
 			requireStatic = shell.ask( "Will your extension require CSS/JS? (Y/N): " );
 		} while( requireStatic != "Y" && requireStatic != "N" );
 
+		arguments.slug = arguments.slug.reReplace( "^preside\-ext\-", "" );
+
 		_unpackSkeleton( arguments.directory );
 		_replacePlaceholdersWithArgs( argumentCollection=arguments );
 
