@@ -1,10 +1,22 @@
 image: gitlab.pixl8.london:5005/utilities/pixl8-ci-env-docker-image
 
+cache:
+    paths:
+        - tests/testbox/
+        - assets/node_modules/
+
 before_script:
   - box slack set defaults channel="BUILDCHANNEL" title="EXTENSIONNAME Gitlab build ${CI_JOB_ID} (${CI_COMMIT_REF_NAME})" titleLink="${CI_PROJECT_URL}/builds/${CI_JOB_ID}" author="${GITLAB_USER_EMAIL}"
 
 stages:
+  - test
   - package
+
+unit_tests:
+    stage: test
+    except:
+      - stable
+    script: ./test.sh
 
 package:
     stage: package

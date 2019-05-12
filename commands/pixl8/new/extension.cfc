@@ -62,6 +62,8 @@ component {
 		var source = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "/../../../resources/extension";
 
 		DirectoryCopy( source, arguments.directory, true );
+
+		FileSetAccessMode( arguments.directory & "/test.sh", "755" );
 	}
 
 	private void function _replacePlaceholdersWithArgs(
@@ -77,6 +79,9 @@ component {
 			, arguments.directory & "/.gitlab-ci.yml"
 			, arguments.directory & "/README.md"
 			, arguments.directory & "/assets/package.json"
+			, arguments.directory & "/tests/Application.cfc"
+			, arguments.directory & "/test.sh"
+			, arguments.directory & "/server-tests.json"
 		];
 
 		for( var filePath in filePaths ) {
