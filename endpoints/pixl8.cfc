@@ -29,11 +29,12 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 	public string function resolvePackage( required string package, boolean verbose=false ) {
 		wirebox.getInstance( "interceptorService" ).registerInterceptor( this );
 
-		var job          = wirebox.getInstance( 'interactiveJob' );
-		var slug         = parseSlug( arguments.package );
-		var artifactSlug = "pixl8:#slug#";
-		var version      = parseVersion( arguments.package );
-		var strVersion   = semanticVersion.parseVersion( version );
+		var job           = wirebox.getInstance( 'interactiveJob' );
+		var slug          = parseSlug( arguments.package );
+		var artifactDelim = _isWindows() ? "-" : ":";
+		var artifactSlug  = "pixl8#artifactDelim##slug#";
+		var version       = parseVersion( arguments.package );
+		var strVersion    = semanticVersion.parseVersion( version );
 
 		if( semanticVersion.isExactVersion( version ) && artifactService.artifactExists( artifactSlug, version ) && strVersion.preReleaseID != 'snapshot' ) {
 			job.addLog( "Package found in local artifacts!");
@@ -122,4 +123,10 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 		return version;
 	}
 
+// private helpers
+	private boolean function _isWindows() {
+		var osName = createObject( 'java', 'java.lang.System' ).getProperty( 'os.name' ).toLowerCase();
+
+		return osName.contains( "win" );
+	}
 }
