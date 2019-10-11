@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.2
+
+* Fix case sensitivity of Gruntfile.js
+
 ## v0.2.1
 
 * Fix cache artifacts path for windows (contained ':' which cannot exist in windows folder names)
