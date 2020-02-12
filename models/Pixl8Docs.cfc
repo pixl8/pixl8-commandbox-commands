@@ -11,13 +11,13 @@ component {
 	 * Creates CFC service layer documentation
 	 *
 	 * @componentPath.hint Component path used to instantiate the component, e.g. "preside.system.presideobjects.PresideObjectService"
-	 * @componentPath.hint Component path used to instantiate the component, e.g. "preside.system.presideobjects.PresideObjectService"
 	 *
 	 */
 	public struct function createCFCDocumentation(
 		  required string  componentPath
 		, required string  docsPath
 		,          numeric navigationOrder = 0
+		,          string  docTempReplace  = ""
 	) {
 		var returnStruct = { success=true };
 		var meta         = GetComponentMetaData( arguments.componentPath );
@@ -28,6 +28,8 @@ component {
 		var pageDir      = arguments.docsPath & "/" & pageName;
 		var pageFile     = pageDir & "/index.markdown";
 		var singleton    = IsBoolean( meta.singleton ?: "" ) && meta.singleton;
+		var fullPath     = "";
+		var extended     = false;
 
 		if ( !DirectoryExists( pageDir ) ) {
 			DirectoryCreate( pageDir );
@@ -44,10 +46,93 @@ component {
 			doc.append( DOUBLELINE & _parseHint( meta.hint ) );
 		}
 
+		if ( ( listFirst( arguments.componentPath, '.' ) eq "docs" ) and !isEmpty( arguments.docTempReplace ) ) {
+			fullPath = replace( arguments.componentPath, 'docs.temp.', arguments.docTempReplace );
+			extended = true;
+		} else {
+			fullPath = arguments.componentPath;
+		}
+
 		doc.append( '<div class="table-responsive"><table class="table table-condensed">' );
-		doc.append( "<tr><th>Full path</th><td>" & arguments.componentPath & "</td></tr>" );
+		doc.append( "<tr><th>Full path</th><td>" & fullPath & "</td></tr>" );
 		doc.append( "<tr><th>Wirebox ref</th><td>" & objName & "</td></tr>" );
 		doc.append( "<tr><th>Singleton</th><td>" & ( singleton ? 'Yes' : 'No' ) & "</td></tr>" );
+
+		if ( extended ) {
+			doc.append( "<tr><th>Extended</th><td>Yes</td></tr>" );
+		}
+
+		doc.append( '</table></div>' );
+
+		if ( ( meta.functions ?: [] ).len() ) {
+			doc.append( DOUBLELINE & _mdTitle( "Public API Methods", 2) );
+
+			for( var fun in meta.functions ){
+				if ( ( fun.access ?: "" ) == "public" && ( IsBoolean( fun.autodoc ?: true ) && ( fun.autodoc ?: true ) ) && fun.name != "init" ) {
+					doc.append( NEWLINE & "* [#fun.name#()](###LCase( fun.name )#)" );
+
+					functionDoc.append( _createFunctionDoc( fun, LCase( objName ), arguments.docsPath & "/#pageName#" ) );
+				}
+			}
+
+			doc.append( DOUBLELINE & "---" & DOUBLELINE & functionDoc );
+		}
+
+		FileWrite( pageFile, doc.toString() );
+
+		return returnStruct;
+	}
+
+	/**
+	 * Creates CFC decorator documentation
+	 *
+	 */
+	public struct function createDecoratorDocumentation(
+		  required string  componentPath
+		, required string  docsPath
+		,          numeric navigationOrder = 0
+	) {
+		var returnStruct = { success=true };
+		var meta         = GetComponentMetaData( arguments.componentPath );
+		var doc          = CreateObject( "java", "java.lang.StringBuffer" );
+		var functionDoc  = CreateObject( "java", "java.lang.StringBuffer" );
+		var objName      = ListLast( arguments.componentPath, "." );
+		var pageName     = LCase( objName );
+		var pageDir      = arguments.docsPath & "/" & pageName;
+		var pageFile     = pageDir & "/index.markdown";
+		var fullPath     = "";
+		var extended     = false;
+
+		if ( !DirectoryExists( pageDir ) ) {
+			DirectoryCreate( pageDir );
+		}
+
+		returnStruct.filename = pageName;
+		returnStruct.title    = meta.displayName ?: objName;
+
+		doc.append( _mdMeta( title=returnStruct.title, id=returnStruct.filename, parent="Decorators", navOrder=arguments.navigationOrder ) );
+
+		doc.append( DOUBLELINE & _mdTitle( "Overview", 2 ) & DOUBLELINE );
+
+		if ( Len( Trim( meta.hint ?: "" ) ) ) {
+			doc.append( DOUBLELINE & _parseHint( meta.hint ) );
+		}
+
+		if ( ( listFirst( arguments.componentPath, '.' ) eq "docs" ) ) {
+			fullPath = replace( arguments.componentPath, 'docs.temp.', "app." );
+			extended = true;
+		} else {
+			fullPath = arguments.componentPath;
+		}
+
+		doc.append( '<div class="table-responsive"><table class="table table-condensed">' );
+		doc.append( "<tr><th>Full path</th><td>" & fullPath & "</td></tr>" );
+		doc.append( "<tr><th>Wirebox ref</th><td>" & objName & "</td></tr>" );
+
+		if ( extended ) {
+			doc.append( "<tr><th>Extended</th><td>Yes</td></tr>" );
+		}
+
 		doc.append( '</table></div>' );
 
 		if ( ( meta.functions ?: [] ).len() ) {
@@ -76,14 +161,23 @@ component {
 	 * @componentPath.hint Component path used to instantiate the component, e.g. "preside.system.preside-objects.page"
 	 *
 	 */
-	public struct function createPresideObjectDocumentation( required string componentPath, required string docsPath, numeric navigationOrder=0 ) {
+	public struct function createPresideObjectDocumentation(
+		  required string  componentPath
+		, required string  docsPath
+		,          numeric navigationOrder = 0
+		,          string  docTempReplace  = ""
+	) {
 		var returnStruct = { success=true };
 		var meta         = GetComponentMetaData( arguments.componentPath );
 		var doc          = CreateObject( "java", "java.lang.StringBuffer" );
+		var apiList      = CreateObject( "java", "java.lang.StringBuffer" );
 		var objName      = ListLast( arguments.componentPath, "." );
 		var pageName     = LCase( objName );
 		var pageDir      = arguments.docsPath & "/" & pageName;
 		var pageFile     = pageDir & "/presideobject.markdown";
+		var fullPath     = Replace( arguments.componentPath, "preside.system.", "" );
+		var extended     = false;
+		var isPageType   = findNoCase( "page-type", arguments.componentPath ) ? true : false;
 
 		if ( !DirectoryExists( pageDir ) ) {
 			DirectoryCreate( pageDir );
@@ -99,15 +193,33 @@ component {
 			doc.append( _parseHint( meta.hint ) & DOUBLELINE );
 		}
 
+		if ( ( listFirst( arguments.componentPath, '.' ) eq "docs" ) and !isEmpty( arguments.docTempReplace ) ) {
+			fullPath = replace( fullPath, 'docs.temp.', arguments.docTempReplace );
+			extended = true;
+		}
+
+		fullPath = Replace( fullPath, ".", "/", "all" );
+
 		doc.append( '<div class="table-responsive"><table class="table table-condensed">' );
-		doc.append( "<tr><th>Object name</th><td>  " & ListLast( arguments.componentPath, "." )  & "</td></tr>" );
-		doc.append( "<tr><th>Table name</th><td>  " & "psys_" & ListLast( arguments.componentPath, "." )  & "</td></tr>" );
-		doc.append( "<tr><th>Path</th><td>  " & "/" & Replace( Replace( arguments.componentPath, "preside.system.", "" ), ".", "/", "all" ) & ".cfc" & "</td></tr>" );
+		doc.append( "<tr><th>Object name</th><td> " & ListLast( arguments.componentPath, "." )  & "</td></tr>" );
+		doc.append( "<tr><th>Table name</th><td>  " & ListLast( arguments.componentPath, "." )  & "</td></tr>" );
+		doc.append( "<tr><th>Path</th><td>  " & "/" & fullPath & ".cfc" & "</td></tr>" );
+		doc.append( "<tr><th>Page type</th><td>" & ( isPageType ? 'Yes' : 'No' ) & "</td></tr>" );
+
+		if ( extended ) {
+			doc.append( "<tr><th>Extended</th><td>Yes</td></tr>" );
+		}
+
 		doc.append( '</table></div>' );
 
 		doc.append( DOUBLELINE & _mdTitle( "Properties" ) & DOUBLELINE );
 		doc.append( "```cfc" & NEWLINE );
-		doc.append( _parsePresideObjectPropertiesAsCode( arguments.componentPath ) );
+
+		var objectProperties = _parsePresideObjectPropertiesAsCode( arguments.componentPath );
+		if ( isEmpty( objectProperties ) ) {
+			return { success=false };
+		}
+		doc.append( objectProperties );
 		doc.append( NEWLINE & "```" );
 
 		if ( ( meta.functions ?: [] ).len() ) {
@@ -115,14 +227,15 @@ component {
 
 			for( var fun in meta.functions ){
 				if ( ( fun.access ?: "" ) == "public" && ( IsBoolean( fun.autodoc ?: true ) && ( fun.autodoc ?: true ) ) ) {
-					functionDocs &= NEWLINE & "* [[#pageName#-#LCase(fun.name)#]]";
+					apiList.append( NEWLINE & "* [#fun.name#()](###LCase( fun.name )#)" );
 
-					_createFunctionDoc( fun, LCase( objName ), pageDir );
+					functionDocs &= _createFunctionDoc( fun, LCase( objName ), pageDir );
 				}
 			}
 
 			if ( functionDocs.len() ) {
-				doc.append( DOUBLELINE & _mdTitle( "Public API Methods" ) & NEWLINE );
+				doc.append( DOUBLELINE & _mdTitle( "Public API Methods" ) );
+				doc.append( apiList & DOUBLELINE & "---" & DOUBLELINE );
 				doc.append( functionDocs );
 			}
 		}
@@ -151,12 +264,16 @@ component {
 			var documentation = Trim( Mid( fileContent, documentationMatch.pos[2], documentationMatch.len[2] ) );
 		}
 
-		var parentDir     = listLast( arrayLast( reMatch( 'application\/forms\/(.*)\/', arguments.xmlFilePath ) ), '\/' );
+		var parentDir     = listGetAt( arguments.xmlFilePath, listLen( arguments.xmlFilePath, '\/' )-1, '\/' );
 		var title         = ListFirst( documentation, Chr(10) & Chr(13) );
 		var description   = ListRest( documentation, Chr(10) & Chr(13) );
 		var relativePath  = Replace( Replace( xmlFilePath, "\", "/", "all" ), ExpandPath( "/preside/system" ), "" );
 		var dotPath       = Replace( ReReplace( ReReplace( relativePath, "^/forms/", "" ), "\.xml$", "" ), "/", ".", "all" );
 		var source        = ReReplace( fileContent, "<!--##!autodoc(.*?)-->", "" );
+
+		if ( parentDir eq "forms" ) {
+			parentDir = "";
+		}
 
 		source = ReReplace( source, "\n", "`$$$", "all" );
 		source = ListToArray( source, "`" );
@@ -170,7 +287,7 @@ component {
 		source = Replace( source, "$$$", "", "all" );
 		source = Replace( source, Chr(9), INDENT, "all" );
 
-		returnStruct.filename  = LCase( ReReplace( title, "\W", "", "all" ) );
+		returnStruct.filename  = LCase( ReReplace( ( !isEmpty( parentDir ) ? parentDir : title ), "\W", " ", "all" ) );
 		returnStruct.title     = title;
 		returnStruct.parentDir = parentDir;
 
@@ -189,8 +306,12 @@ component {
 		doc.append( source & NEWLINE );
 		doc.append( "```" );
 
-		var fileDir  = arguments.docDirectory & "/#returnStruct.filename#";
-		var filePath = fileDir & ".markdown";
+		var fileDir  = arguments.docDirectory & "/#returnStruct.parentDir#/";
+		var filePath = fileDir & "#title#.markdown";
+
+		if ( !DirectoryExists( fileDir ) ) {
+			DirectoryCreate( fileDir );
+		}
 
 		FileWrite( filePath, doc.toString() );
 
@@ -242,9 +363,6 @@ component {
 		var argumentsDoc       = _createArgumentsDoc( fun.parameters );
 		var argsRenderedInHint = false;
 		var functionTitle      = fun.name & "()";
-		var functionDir        = arguments.docsDirectory & "/" & LCase( fun.name );
-		var functionFilePath   = functionDir & "/method.md";
-		var functionPageId     = arguments.objectName & "-" & LCase( fun.name );
 
 		functionDoc.append( NEWLINE & _mdTitle( functionTitle, 2 ) & NEWLINE );
 		functionDoc.append( NEWLINE & "```cfc" );
@@ -316,6 +434,7 @@ component {
 			}
 
 			signature &= LJustify( arg.type, maxArgTypeLen ) & " " & LJustify( arg.name, maxArgNameLen );
+			signature  = trim( signature );
 
 			var default = _parseArgumentDefault( arg );
 			if ( default != "*none*" ) {

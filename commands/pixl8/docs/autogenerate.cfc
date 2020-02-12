@@ -22,15 +22,21 @@ component {
 		if ( directoryExists( "#arguments.directory#website" ) ) {
 			applicationFolderExist     = _checkApplicationFolderExist( directory="#arguments.directory#website/" );
 			applicationFolderDirectory = "#arguments.directory#website/application/";
-		} else {
+		} else if ( directoryExists( "#arguments.directory#application" ) ) {
 			applicationFolderExist     = _checkApplicationFolderExist( directory=arguments.directory );
 			applicationFolderDirectory = "#arguments.directory#application/";
+		} else {
+			applicationFolderDirectory = "#arguments.directory#";
 		}
 
-		if ( applicationFolderExist and !isEmpty( applicationFolderDirectory ) ) {
-			_generateDocs( applicationFolderDirectory, arguments.directory, "services", 1 );
+		if ( !isEmpty( applicationFolderDirectory ) ) {
+			_generateDocs( applicationFolderDirectory, arguments.directory, "services"       , 1 );
 			_generateDocs( applicationFolderDirectory, arguments.directory, "preside-objects", 2 );
-			_generateDocs( applicationFolderDirectory, arguments.directory, "forms", 3 );
+			_generateDocs( applicationFolderDirectory, arguments.directory, "forms"          , 3 );
+
+			if ( directoryExists( "#applicationFolderDirectory#decorators" ) ) {
+				_generateDocs( applicationFolderDirectory, arguments.directory, "decorators"     , 4 );
+			}
 		}
 
 		print.line();
@@ -54,7 +60,24 @@ component {
 			return true;
 		}
 
+		if ( fileExists( "#arguments.directory#box.json" ) ) {
+			return true;
+		}
+
 		return false;
+	}
+
+	private void function _checkAndCreateDir( required string directory ) {
+		if ( DirectoryExists( arguments.directory ) ) {
+			DirectoryDelete( arguments.directory, true );
+		}
+		DirectoryCreate( arguments.directory );
+	}
+
+	private void function _checkAndRemoveDir( required string directory ) {
+		if ( DirectoryExists( arguments.directory ) ) {
+			DirectoryDelete( arguments.directory, true );
+		}
 	}
 
 	private void function _generateDocs(
@@ -69,14 +92,18 @@ component {
 			cfcFiles = DirectoryList( "#arguments.appFolderDirectory##arguments.directoryName#", true, "path", "*.xml" );
 		}
 
-		var apiDocsPath      = "#arguments.projectDirectory#docs/reference/#arguments.directoryName#";
+		if ( arguments.directoryName eq "helpers" ) {
+			cfcFiles = DirectoryList( "#arguments.appFolderDirectory##arguments.directoryName#", true, "path", "*.cfm" );
+		}
+
+		var tempPath         = "#arguments.projectDirectory#docs/temp";
+		var refDocsPath      = "#arguments.projectDirectory#docs/reference/#arguments.directoryName#";
 		var directoryDocPath = "#arguments.projectDirectory#docs/reference/#arguments.directoryName#/index.markdown";
 		var createdDocs      = {};
+		var projectAppPath   = replace( arguments.appFolderDirectory, arguments.projectDirectory, '' );
 
-		if ( DirectoryExists( apiDocsPath ) ) {
-			DirectoryDelete( apiDocsPath, true );
-		}
-		DirectoryCreate( apiDocsPath );
+		_checkAndCreateDir( refDocsPath );
+		_checkAndCreateDir( tempPath );
 
 		var indexDoc = CreateObject( "java", "java.lang.StringBuffer" );
 
@@ -86,7 +113,7 @@ component {
 		indexDoc.append( "nav_order: #arguments.navOrder#" & Chr(10) );
 		indexDoc.append( "parent: Reference" & Chr(10) );
 
-		if ( arguments.directoryName neq "forms" ) {
+		if ( listFindNoCase( "services,decorators", arguments.directoryName) ) {
 			indexDoc.append( "has_children: true" & Chr(10) );
 		}
 
@@ -99,12 +126,13 @@ component {
 		for( var file in cfcFiles ) {
 			var componentPath = "";
 			var meta          = {};
-
-			componentPath = Replace( file, arguments.appFolderDirectory, "website/application/" );
+			var filePath      = Replace( file, arguments.appFolderDirectory, projectAppPath );
 
 			if ( arguments.directoryName neq "forms" ) {
-				componentPath = ReReplace( componentPath, "\.cfc$", "" );
+				componentPath = ReReplace( filePath, "\.(cfc|cfm)$", "" );
 				componentPath = ListChangeDelims( componentPath, ".", "\/" );
+			} else {
+				componentPath = filePath;
 			}
 
 			try {
@@ -117,51 +145,107 @@ component {
 
 					switch( arguments.directoryName ) {
 						case "services":
-							result = pixl8docs.createCFCDocumentation( componentPath, apiDocsPath, fileCounter );
+							result = pixl8docs.createCFCDocumentation( componentPath, refDocsPath, fileCounter );
 							break;
 						case "preside-objects":
-							result = pixl8docs.createPresideObjectDocumentation( componentPath, apiDocsPath, fileCounter );
+							result = pixl8docs.createPresideObjectDocumentation( componentPath, refDocsPath );
 							break;
 						case "forms":
-							result = pixl8docs.writeXmlFormDocumentation( componentPath, apiDocsPath, fileCounter );
+							result = pixl8docs.writeXmlFormDocumentation( componentPath, refDocsPath, fileCounter );
 							break;
 					}
 
 					if ( result.success ) {
-						createdDocs[ result.filename ] = { title = result.title };
 						fileCounter ++;
-
-						if ( !isEmpty( result.parentDir ?: "" ) ) {
-							createdDocs[ result.filename ].parentDir = result.parentDir;
+						var modifiedFilename = reReplace( result.filename, '\W', '-', 'all' );
+						if ( structKeyExists( createdDocs, modifiedFilename ) ) {
+							createdDocs[ modifiedFilename ].append( { title=result.title, parentDir=result.parentDir ?: "" } );
+						} else {
+							createdDocs[ modifiedFilename ] = [ { title=result.title, parentDir=result.parentDir ?: "" } ];
 						}
 					}
 				}
 			} catch (any e) {
-				print.boldWhiteOnRedLine( e.message ?: "" ).line();
+				var tempSubDir = "";
+				switch( arguments.directoryName ) {
+					case "services":
+						tempSubDir = "services";
+						break;
+					case "preside-objects":
+						var objectCfcParentFolder = listGetAt( filePath, listLen( filePath, '/' )-1, '/' );
+
+						tempSubDir = "preside-objects#( objectCfcParentFolder eq "preside-objects" ) ? '' : '/#objectCfcParentFolder#'#";
+						break;
+					case "decorators":
+						tempSubDir = "decorators";
+						break;
+				}
+
+				if ( !isEmpty( tempSubDir ) ) {
+					if ( !DirectoryExists( "#tempPath#/#tempSubDir#" ) ) {
+						DirectoryCreate( "#tempPath#/#tempSubDir#" );
+					}
+
+					var fileContent  = "";
+					var tempFilePath = "#tempPath#/#tempSubDir#/#listLast( filePath, '\/' )#";
+					var result       = { success=false };
+
+					componentPath = Replace( tempFilePath, arguments.projectDirectory, '' );
+					componentPath = ReReplace( componentPath, "\.cfc$", "" );
+					componentPath = ListChangeDelims( componentPath, ".", "\/" );
+
+					switch( arguments.directoryName ) {
+						case "services":
+							fileContent = replace( FileRead(filePath), 'app.', replace( projectAppPath, '/', '.', 'all' ) );
+							FileWrite( tempFilePath, fileContent );
+
+							result = pixl8docs.createCFCDocumentation( componentPath, refDocsPath, fileCounter, replace( projectAppPath, '/', '.', 'all' ) );
+							break;
+						case "preside-objects":
+							fileContent = reReplace( FileRead(filePath), 'extends=".*"\s{\n', '{#Chr(10)#' );
+							FileWrite( tempFilePath, fileContent );
+
+							result = pixl8docs.createPresideObjectDocumentation( componentPath, refDocsPath, 0, projectAppPath );
+							break;
+						case "decorators":
+							fileContent = reReplace( FileRead(filePath), 'extends=".*"\s{\n', '{#Chr(10)#' );
+							FileWrite( tempFilePath, fileContent );
+
+							result = pixl8docs.createDecoratorDocumentation( componentPath, refDocsPath, 0, projectAppPath );
+							break;
+					}
+
+					if ( result.success ) {
+						createdDocs[ reReplace( result.filename, '\W', '-', 'all' ) ] = [ { title = result.title } ];
+						fileCounter ++;
+					}
+				} else {
+					print.redLine( e.message ?: "" ).line();
+				}
+			}
+		}
+
+		if ( arguments.directoryName eq "preside-objects" ) {
+			var contentDocs = CreateObject( "java", "java.lang.StringBuffer" );
+
+			for ( var item in createdDocs ) {
+				var itemName = reReplace( item, "[^A-z]", " ", "all" );
+
+				indexDoc.append( "* [#ucFirst( itemName )#](/reference/preside-objects/#item#/presideobject.html)" & Chr(10) );
 			}
 		}
 
 		if ( arguments.directoryName eq "forms" ) {
 			var contentDocs = CreateObject( "java", "java.lang.StringBuffer" );
-			var outputDocs  = {};
-			var sortedDocs  = structSort( createdDocs, "textnocase", "asc", "TITLE" );
 
-			for( var doc in sortedDocs ){
-				if ( structKeyExists( outputDocs, createdDocs[doc].parentdir ) ) {
-					outputDocs[ createdDocs[doc].parentdir ].append( doc );
-				} else {
-					outputDocs[ createdDocs[doc].parentdir ] = [ doc ];
-				}
-			}
+			for ( var item in createdDocs ) {
+				var itemName = reReplace( item, "[^A-z]", " ", "all" );
 
-			for ( var item in outputDocs ) {
-				var itemName = reReplace( item, "[^a-z0-9]", " ", "all" );
-
-				indexDoc.append( "* [#ucFirst( itemName )#](###replace( itemName, " ", "-" )#)" & Chr(10) );
+				indexDoc.append( "* [#ucFirst( itemName )#](###replace( lCase( itemName ), " ", "-" )#)" & Chr(10) );
 				contentDocs.append( Chr(10) & "###### " & ucFirst( itemName ) & "" & Chr(10) & Chr(10) );
 
-				for ( var doc in outputDocs[item] ) {
-					contentDocs.append( "* [#doc#](/reference/forms/#doc#.html)" & Chr(10) );
+				for ( var doc in createdDocs[item] ) {
+					contentDocs.append( "* [#doc.title ?: ""#](/reference/forms/#item#/#doc.title ?: ""#.html)" & Chr(10) );
 				}
 
 				contentDocs.append( Chr(10) & "[Back to form group list](##forms){: .fs-2}" & Chr(10) & Chr(10) & "---" & Chr(10) );
@@ -171,6 +255,7 @@ component {
 		}
 
 		FileWrite( directoryDocPath, indexDoc.toString() );
+		_checkAndRemoveDir( tempPath );
 	}
 
 }
