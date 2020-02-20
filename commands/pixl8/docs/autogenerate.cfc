@@ -196,10 +196,18 @@ component {
 
 					switch( arguments.directoryName ) {
 						case "services":
-							fileContent = replace( FileRead(filePath), 'app.', replace( projectAppPath, '/', '.', 'all' ) );
+							var replacedPath = replace( projectAppPath, '/', '.', 'all' );
+
+							if ( findNoCase( 'preside.', FileRead(filePath) ) ) {
+								fileContent = replace( FileRead(filePath), 'preside.', replacedPath );
+								fileContent = replace( fileContent, '.application.', '.preside.' );
+							} else {
+								fileContent = replace( FileRead(filePath), 'app.', replacedPath );
+							}
+
 							FileWrite( tempFilePath, fileContent );
 
-							result = pixl8docs.createCFCDocumentation( componentPath, refDocsPath, fileCounter, replace( projectAppPath, '/', '.', 'all' ) );
+							result = pixl8docs.createCFCDocumentation( componentPath, refDocsPath, fileCounter, replacedPath );
 							break;
 						case "preside-objects":
 							fileContent = reReplace( FileRead(filePath), 'extends=".*"\s{\n', '{#Chr(10)#' );
@@ -229,7 +237,7 @@ component {
 			var contentDocs = CreateObject( "java", "java.lang.StringBuffer" );
 
 			for ( var item in createdDocs ) {
-				var itemName = reReplace( item, "[^A-z]", " ", "all" );
+				var itemName = reReplace( item, "[^A-z0-9]", " ", "all" );
 
 				indexDoc.append( "* [#ucFirst( itemName )#](/reference/preside-objects/#item#/presideobject.html)" & Chr(10) );
 			}
@@ -239,7 +247,7 @@ component {
 			var contentDocs = CreateObject( "java", "java.lang.StringBuffer" );
 
 			for ( var item in createdDocs ) {
-				var itemName = reReplace( item, "[^A-z]", " ", "all" );
+				var itemName = reReplace( item, "[^A-z0-9]", " ", "all" );
 
 				indexDoc.append( "* [#ucFirst( itemName )#](###replace( lCase( itemName ), " ", "-" )#)" & Chr(10) );
 				contentDocs.append( Chr(10) & "###### " & ucFirst( itemName ) & "" & Chr(10) & Chr(10) );

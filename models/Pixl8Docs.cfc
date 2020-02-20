@@ -20,7 +20,14 @@ component {
 		,          string  docTempReplace  = ""
 	) {
 		var returnStruct = { success=true };
-		var meta         = GetComponentMetaData( arguments.componentPath );
+
+		try {
+			var meta = GetComponentMetaData( arguments.componentPath );
+		} catch (any e) {
+			// TODO if multiple level extends
+			return { success=false };
+		}
+
 		var doc          = CreateObject( "java", "java.lang.StringBuffer" );
 		var functionDoc  = CreateObject( "java", "java.lang.StringBuffer" );
 		var objName      = ListLast( arguments.componentPath, "." );
