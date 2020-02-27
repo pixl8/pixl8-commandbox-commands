@@ -60,6 +60,7 @@ component {
 			fullPath = arguments.componentPath;
 		}
 
+		doc.append( DOUBLELINE );
 		doc.append( '<div class="table-responsive"><table class="table table-condensed">' );
 		doc.append( "<tr><th>Full path</th><td>" & fullPath & "</td></tr>" );
 		doc.append( "<tr><th>Wirebox ref</th><td>" & objName & "</td></tr>" );
