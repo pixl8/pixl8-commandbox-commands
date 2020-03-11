@@ -332,7 +332,7 @@ component {
 		return RepeatString( '##', arguments.level ) & " " & arguments.title & NEWLINE;
 	}
 
-	private string function _mdMeta( required string title, required string id, boolean hasChildren=false, string parent="", numeric navOrder=0 ) {
+	private string function _mdMeta( required string title, required string id, boolean hasChildren=false, string parent="", numeric navOrder=0, boolean excludeFromNav=true ) {
 		var metaText = "";
 
 		metaText &= "---#NEWLINE#";
@@ -348,7 +348,9 @@ component {
 			metaText &= "has_children: true#NEWLINE#";
 		}
 
-		if ( arguments.navOrder gt 0 ) {
+		if ( arguments.excludeFromNav ) {
+			metaText &= "nav_exclude: true#NEWLINE#";
+		} else if ( arguments.navOrder > 0 ) {
 			metaText &= "nav_order: #arguments.navOrder##NEWLINE#";
 		}
 

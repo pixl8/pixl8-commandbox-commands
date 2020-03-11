@@ -22,12 +22,12 @@ title: PROJECTNAME
 email: dominic.watson@pixl8.co.uk
 description: >- # this means to ignore newlines until "baseurl:"
 baseurl: "/" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "/docs/PROJECTNAME" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: pixl8
 github_username:  pixl8
 
 # Build settings
-remote_theme: pmarsceill/just-the-docs
+theme: "just-the-docs"
 plugins:
   - jekyll-feed
 
