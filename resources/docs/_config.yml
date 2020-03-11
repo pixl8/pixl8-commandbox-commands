@@ -30,6 +30,10 @@ github_username:  pixl8
 theme: "just-the-docs"
 plugins:
   - jekyll-feed
+  - jekyll-mermaid
+
+mermaid:
+  src: '/docs/PROJECTNAME/js/mermaid.min.js'
 
 # Exclude from processing.
 # The following items will not be processed, by default.

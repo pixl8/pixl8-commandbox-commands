@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.6
+
+* Add mermaid.js to the docs scaffold so that devs can embed diagrams in their docs easily
+* Make forms + preside objects index pages more simple (just show child pages)
+* Attempt to fudge over issues with documenting service components that implement components outside of the scope of the generator (i.e. from other extensions)
+
 ## v0.2.5
 
 * Fix jekyll + read the docs version + allow excluding of grand-child pages from the nav

@@ -112,11 +112,7 @@ component {
 		indexDoc.append( "title: #ucFirst( replace( arguments.directoryName, 'preside-', '' ) )#" & Chr(10) );
 		indexDoc.append( "nav_order: #arguments.navOrder#" & Chr(10) );
 		indexDoc.append( "parent: Reference" & Chr(10) );
-
-		if ( listFindNoCase( "services,decorators", arguments.directoryName) ) {
-			indexDoc.append( "has_children: true" & Chr(10) );
-		}
-
+ 		indexDoc.append( "has_children: true" & Chr(10) );
 		indexDoc.append( "---" & Chr(10) & Chr(10) );
 		indexDoc.append( "## #ucFirst( replace( arguments.directoryName, 'preside-', '' ) )#" & Chr(10) );
 
@@ -197,17 +193,22 @@ component {
 					switch( arguments.directoryName ) {
 						case "services":
 							var replacedPath = replace( projectAppPath, '/', '.', 'all' );
+							var originalFileContent = FileRead(filePath);
 
-							if ( findNoCase( 'preside.', FileRead(filePath) ) ) {
-								fileContent = replace( FileRead(filePath), 'preside.', replacedPath );
+							if ( findNoCase( 'preside.', originalFileContent ) ) {
+								fileContent = replace( originalFileContent, 'preside.', replacedPath );
 								fileContent = replace( fileContent, '.application.', '.preside.' );
 							} else {
-								fileContent = replace( FileRead(filePath), 'app.', replacedPath );
+								fileContent = replace( originalFileContent, 'app.', replacedPath );
 							}
+							fileContent = ReReplaceNoCase( originalFileContent, " implements=""[a-z0-9_\-\.,\s]+""", "" );
 
 							FileWrite( tempFilePath, fileContent );
 
 							result = pixl8docs.createCFCDocumentation( componentPath, refDocsPath, fileCounter, replacedPath );
+							if ( !result.success ) {
+								print.yellowLine( "Failed to generate documentation for #componentPath#. Could not generate metadata" );
+							}
 							break;
 						case "preside-objects":
 							fileContent = reReplace( FileRead(filePath), 'extends=".*"\s{\n', '{#Chr(10)#' );
@@ -231,35 +232,6 @@ component {
 					print.redLine( e.message ?: "" ).line();
 				}
 			}
-		}
-
-		if ( arguments.directoryName eq "preside-objects" ) {
-			var contentDocs = CreateObject( "java", "java.lang.StringBuffer" );
-
-			for ( var item in createdDocs ) {
-				var itemName = reReplace( item, "[^A-z0-9]", " ", "all" );
-
-				indexDoc.append( "* [#ucFirst( itemName )#](/reference/preside-objects/#item#/presideobject.html)" & Chr(10) );
-			}
-		}
-
-		if ( arguments.directoryName eq "forms" ) {
-			var contentDocs = CreateObject( "java", "java.lang.StringBuffer" );
-
-			for ( var item in createdDocs ) {
-				var itemName = reReplace( item, "[^A-z0-9]", " ", "all" );
-
-				indexDoc.append( "* [#ucFirst( itemName )#](###replace( lCase( itemName ), " ", "-" )#)" & Chr(10) );
-				contentDocs.append( Chr(10) & "###### " & ucFirst( itemName ) & "" & Chr(10) & Chr(10) );
-
-				for ( var doc in createdDocs[item] ) {
-					contentDocs.append( "* [#doc.title ?: ""#](/reference/forms/#item#/#doc.title ?: ""#.html)" & Chr(10) );
-				}
-
-				contentDocs.append( Chr(10) & "[Back to form group list](##forms){: .fs-2}" & Chr(10) & Chr(10) & "---" & Chr(10) );
-			}
-
-			indexDoc.append( Chr(10) & "---" & Chr(10) & contentDocs );
 		}
 
 		FileWrite( directoryDocPath, indexDoc.toString() );
