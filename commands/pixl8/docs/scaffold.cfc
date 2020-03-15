@@ -36,10 +36,17 @@ component {
 		var source = GetDirectoryFromPath( GetCurrentTemplatePath() ) & "/../../../resources/docs";
 
 		DirectoryCopy( source, arguments.directory, true );
+		FileWrite( arguments.directory & "/.gitignore", "_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata
+vendor
+Gemfile.lock
+" );
 	}
 
 	private void function _replacePlaceholdersWithArgs(
-		  required string name = uCase( listlast( shell.pwd(), "\/" ) )
+		  required string name = ListLast( shell.pwd(), "\/" )
 		, required string directory
 	) {
 		var filePaths = [
