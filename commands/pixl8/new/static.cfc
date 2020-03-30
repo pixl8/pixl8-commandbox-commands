@@ -23,6 +23,9 @@ component {
 			, save = false
 		).run();
 
+		FileWrite( "#arguments.directory#/static/.gitignore", "_core
+sticker" );
+
 		print.line();
 		print.greenLine( "**************************************************" );
 		print.greenLine( "Your static site has been successfully scaffolded." );
