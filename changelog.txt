@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0
+
+* Added `pixl8 new static` command
+* Added `pixl8 new site` command
+
 ## v0.2.6
 
 * Add mermaid.js to the docs scaffold so that devs can embed diagrams in their docs easily
