@@ -22,7 +22,7 @@ component {
 		//choose admin or site
 		var appType = "";
 
-		var appTypeList = "site,webapp,rest" 
+		var appTypeList = "site,webapp" 
 
 		print.line();
 		print.line( "Available site templates from which to build your new site/application:" );
@@ -35,10 +35,6 @@ component {
 		print.yellowText( "webapp" );
 		print.line( ":  Web applications that are purely admin based." );
 
-		print.text( " * " );
-		print.yellowText( "rest" );
-		print.line( ": REST webservice application." );
-
 
 		while( !listFindNoCase( appTypeList , appType) ) {
 			appType = LCase(ask( "Enter site template: " ));
@@ -50,22 +46,11 @@ component {
 			var webDir = ListAppend( arguments.directory, "website", "/" );
 			
 			command( "preside new site" ).params(
-				skeleton = "preside-skeleton-webapp"
+				skeleton = "pixl8:pixl8-admin-site-skeleton"
 			).run();
 
 			break;
 
-		
-		case "rest":
-			var webDir = ListAppend( arguments.directory, "website", "/" );
-			
-
-			command( "preside new site" ).params(
-				skeleton = "preside-skeleton-rest"
-			).run();
-
-			break;
-		
 		case "site":
 			// scaffold the static dir
 			command( "pixl8 new static" ).run();
