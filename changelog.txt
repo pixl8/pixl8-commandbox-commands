@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.1
+
+* Refinements to pixl8 new site command (allow choice of admin webapp or website)
+* Fix for docuemtnation builder and forms documentation
+
 ## v0.3.0
 
 * Added `pixl8 new static` command
