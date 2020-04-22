@@ -264,7 +264,7 @@ component {
 	public struct function writeXmlFormDocumentation( required string xmlFilePath, required string docDirectory, numeric navigationOrder=0 ) output=true {
 		var returnStruct       = { success=true };
 		var fileContent        = FileRead( arguments.xmlFilePath );
-		var documentationMatch = ReFind( "<!--##!autodoc(.*?)-->", fileContent, 1, true );
+		var documentationMatch = ReFind( "<!--.*!autodoc(.*?)-->", fileContent, 1, true );
 
 		if ( !documentationMatch.len.len() == 2 || !documentationMatch.len[2] ) {
 			var documentation = replace( listLast( arguments.xmlFilePath, "\/" ), '.xml', '' );
@@ -273,11 +273,11 @@ component {
 		}
 
 		var parentDir     = listGetAt( arguments.xmlFilePath, listLen( arguments.xmlFilePath, '\/' )-1, '\/' );
-		var title         = ListFirst( documentation, Chr(10) & Chr(13) );
+		var title         = ListFirst( replace( listLast( arguments.xmlFilePath, "\/" ), '.xml', '' ), Chr(10) & Chr(13) );
 		var description   = ListRest( documentation, Chr(10) & Chr(13) );
 		var relativePath  = Replace( Replace( xmlFilePath, "\", "/", "all" ), ExpandPath( "/preside/system" ), "" );
 		var dotPath       = Replace( ReReplace( ReReplace( relativePath, "^/forms/", "" ), "\.xml$", "" ), "/", ".", "all" );
-		var source        = ReReplace( fileContent, "<!--##!autodoc(.*?)-->", "" );
+		var source        = ReReplace( fileContent, "<!--.*!autodoc(.*?)-->", "" );
 
 		if ( parentDir eq "forms" ) {
 			parentDir = "";
