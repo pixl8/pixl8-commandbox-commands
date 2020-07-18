@@ -65,7 +65,7 @@ component {
 
 		DirectoryCopy( source, arguments.directory, true );
 
-		FileSetAccessMode( arguments.directory & "/test.sh", "755" );
+		FileSetAccessMode( arguments.directory & "/runtests.sh", "755" );
 	}
 
 	private void function _replacePlaceholdersWithArgs(
@@ -82,9 +82,11 @@ component {
 			, arguments.directory & "/README.md"
 			, arguments.directory & "/assets/package.json"
 			, arguments.directory & "/tests/Application.cfc"
-			, arguments.directory & "/test.sh"
+			, arguments.directory & "/runtests.sh"
 			, arguments.directory & "/server-tests.json"
 		];
+
+		var testPort = Int( RandRange(4000, 9999 ) );
 
 		for( var filePath in filePaths ) {
 			var fileContent = FileRead( filePath );
@@ -93,6 +95,7 @@ component {
 			fileContent = ReplaceNoCase( fileContent, "EXTENSIONNAME", arguments.name        , "all" );
 			fileContent = ReplaceNoCase( fileContent, "EXTENSIONURL" , arguments.repoUrl     , "all" );
 			fileContent = ReplaceNoCase( fileContent, "BUILDCHANNEL" , arguments.slackChannel, "all" );
+			fileContent = ReplaceNoCase( fileContent, "TESTPORT"     , testPort              , "all" );
 
 			FileWrite( filePath, fileContent );
 		}
