@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.0.0
+
+* Update 'pixl8 new extension' command to use our 'new' gitlab ci approach with re-usable pipelines
+* Fix issue with missing test.sh for 'pixl8 new extension' command
+
 ## v0.3.1
 
 * Refinements to pixl8 new site command (allow choice of admin webapp or website)

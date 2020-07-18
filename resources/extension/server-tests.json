@@ -3,9 +3,9 @@
     "openbrowser":false,
     "trayEnable":false,
     "web":{
-        "webroot":"tests//",
+        "webroot":"tests/",
         "http":{
-            "port":"5935"
+            "port":"TESTPORT"
         }
     },
     "JVM":{

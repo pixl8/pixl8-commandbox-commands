@@ -24,6 +24,6 @@
         "testbox":"tests/testbox/"
     },
     "testbox":{
-        "runner":"http://127.0.0.1:5935/runtests.cfm"
+        "runner":"http://127.0.0.1:TESTPORT/runtests.cfm"
     }
 }
