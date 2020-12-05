@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.0
+
+* Update mis publish command to not have to push entire package zip up to MIS
+
 ## v2.0.0
 
 * Update 'pixl8 new extension' command to use our 'new' gitlab ci approach with re-usable pipelines
