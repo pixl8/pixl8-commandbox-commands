@@ -31,7 +31,7 @@ component {
 		var accessKey   = pixl8Utils.getMisCredentials();
 		var endpoint    = pixl8Utils.getMisEndpoint();
 		var result      = "";
-		var boxjson     = "";
+		var boxjson     = FileRead( arguments.directory & "/box.json" );
 		var changelog   = "";
 		var readme      = "";
 
@@ -41,8 +41,6 @@ component {
 		if ( !endpoint.len() ) {
 			throw( "No endpoint has been registered for the pixl8 package provider. Use the 'pixl8 mis setendpoint' command to register your endpoint.", 'endpointException' );
 		}
-
-		FileRead( arguments.directory & "/box.json" );
 
 		var readmeFiles = [ "README.md", "README.MD" ];
 		var changelogFiles = [ "changelog.txt", "CHANGELOG.md", "CHANGELOG.MD" ];
@@ -60,9 +58,9 @@ component {
 			}
 		}
 
-		http url="#endpoint.reReplace( "/^", "" )#/api/forgebox/publish/" method="POST" timeout=30 username=accessKey result="result" throwonerror=true {
+		http url="#endpoint.reReplace( "/^", "" )#/api/forgebox/publish/" method="POST" timeout=30 username=accessKey result="result" {
 			httpparam type="formfield" name="boxjson"     value=boxjson;
-			httpparam type="formfield" name="storagePath" value=arguments.storagePath;
+			httpparam type="formfield" name="storagepath" value=arguments.storagePath;
 			httpparam type="formfield" name="readme"      value=readme;
 			httpparam type="formfield" name="changelog"   value=changelog;
 		}

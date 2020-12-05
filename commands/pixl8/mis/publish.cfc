@@ -23,10 +23,10 @@ component {
 
 		var result = misPackageClient.publish( fullPath, storagePath );
 
-		if ( result.success ) {
+		if ( IsBoolean( result.success ?: "" ) && result.success ) {
 			print.greenLine( result.message );
 		} else {
-			print.redLine( result.message );
+			print.redLine( "Unexpected result from API call: " & SerializeJson( result ) );
 		}
 
 
