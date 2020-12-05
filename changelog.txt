@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.1
+
+Fix readme reference to box install instructions
+
 ## v2.1.0
 
 * Update mis publish command to not have to push entire package zip up to MIS
