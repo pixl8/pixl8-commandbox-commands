@@ -18,10 +18,12 @@
         ".twgit_features_subject"
     ],
     "devDependencies":{
-        "testbox":"2.4.0+80"
+        "testbox":"4.2.1",
+        "presidecms":"stable"
     },
     "installPaths":{
-        "testbox":"tests/testbox/"
+        "testbox":"tests/testbox/",
+        "presidecms":"tests/preside/"
     },
     "testbox":{
         "runner":"http://127.0.0.1:TESTPORT/runtests.cfm"
