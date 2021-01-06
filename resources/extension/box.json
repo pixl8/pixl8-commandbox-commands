@@ -19,11 +19,9 @@
     ],
     "devDependencies":{
         "testbox":"4.2.1",
-        "presidecms":"stable"
     },
     "installPaths":{
         "testbox":"tests/testbox/",
-        "presidecms":"tests/preside/"
     },
     "testbox":{
         "runner":"http://127.0.0.1:TESTPORT/runtests.cfm"

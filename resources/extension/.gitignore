@@ -1,7 +1,6 @@
 /.twgit_features_subject
 /.twgit
 /tests/testbox
-/tests/preside
 /tests/testresults.xml
 /assets/node_modules
 /assets/css/**/*.less.css
