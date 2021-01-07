@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.1.2
+
+Upgrade testbox in project scaffolds.
+
 ## v2.1.1
 
 Fix readme reference to box install instructions
