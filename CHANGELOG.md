@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.1.3
+
+* Defend against attempting to create auto docs for components that extend at various levels that we do not have available
+
+
 ## v2.1.2
 
 Upgrade testbox in project scaffolds.
