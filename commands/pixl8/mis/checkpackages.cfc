@@ -28,13 +28,10 @@ component {
 					  id      = packageInfo.slug
 					, version = packageInfo.version
 				});
-			} catch( any e ) {
-				print.orangeLine( "Error reading box.json file [#filePath#] - skipping checks..." );
-			}
+			} catch( any e ) {}
 		}
 
 		if ( !ArrayLen( packages ) ) {
-			print.orangeLine( "No packages found to check - nothing to do." );
 			return;
 		}
 
