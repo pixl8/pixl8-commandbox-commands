@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.0
+
+* Add concept of pixl8-meta-packages. Allows defining of packages that just install other packages.
+
 ## v2.1.3
 
 * Defend against attempting to create auto docs for components that extend at various levels that we do not have available
