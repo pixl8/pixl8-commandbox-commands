@@ -1,7 +1,7 @@
 component {
 	public any function configure() {
 		interceptors = [
-			{ class="#moduleMapping#.interceptors.MetaPackageInstallInterceptor" }
+			{ class="#moduleMapping#.interceptors.MetaPackageInstallInterceptors" }
 		];
 
 		return;
