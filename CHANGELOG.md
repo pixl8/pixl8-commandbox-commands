@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.2
+
+* Typo fix
+
 ## v2.3.1
 
 * Force bleeding edge or stable builds of all dependencies when meta package is installed with @be or @stable
