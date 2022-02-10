@@ -92,8 +92,8 @@ component {
 					, currentWorkingDirectory = cwd
 				);
 
-				StructDelete( containerBoxJson.dependencies, packageId );
-				StructDelete( containerBoxJson.installPaths ?: "", packageId );
+				StructDelete( containerBoxJson.dependencies ?: {}, packageId );
+				StructDelete( containerBoxJson.installPaths ?: {}, packageId );
 			}
 		}
 		if ( anyToRemove ) {
@@ -128,14 +128,14 @@ component {
 
 		for( var packageId in arguments.dependencies ) {
 			if ( !ArrayFindNoCase( excludePackages, packageId ) ) {
-				if ( StructKeyExists( containerBoxJson.installPaths, packageId ) || StructKeyExists( containerBoxJson.dependencies, packageId ) ) {
+				if ( StructKeyExists( ( containerBoxJson.installPaths ?: {} ), packageId ) || StructKeyExists( ( containerBoxJson.dependencies ?: {} ), packageId ) ) {
 					if ( !anyToStrip ) {
 						job.start( "Stripping explicit dependencies from your box.json that are now handled by the meta package [#metaPackageId#]" );
 						anyToStrip = true;
 					}
 					job.start( "Removing explicit dependency from box.json for package [#packageId#]. This is now supplied by the meta package." );
-					StructDelete( containerBoxJson.installPaths, packageId );
-					StructDelete( containerBoxJson.dependencies, packageId );
+					StructDelete( ( containerBoxJson.installPaths ?: {} ), packageId );
+					StructDelete( ( containerBoxJson.dependencies ?: {} ), packageId );
 					job.complete();
 				}
 			}

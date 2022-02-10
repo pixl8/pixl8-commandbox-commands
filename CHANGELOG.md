@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.3
+
+Add some safety checking when operating on installPaths and dependencies in box.json files that may not have those entires
+
 ## v2.3.2
 
 * Typo fix
