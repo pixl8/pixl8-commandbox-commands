@@ -56,13 +56,21 @@ component {
 
 	private void function _installDependencies( dependencies, containerBoxJson, containerConfig, cwd, job, metaPackageId ) {
 		var excludePackages = containerConfig.excludePackages ?: [];
+		var overrideVersion = "";
+
+		if ( ListLast( arguments.metaPackageId, "@" ) == "be" ) {
+			overrideVersion = "be";
+		}
+		if ( ListLast( arguments.metaPackageId, "@" ) == "stable" ) {
+			overrideVersion = "stable";
+		}
 
 		job.start( "Installing Dependencies for meta package: [#metaPackageId#]..." );
 
 		containerConfig.installedPackages = [];
 		for( var packageId in dependencies ) {
 			if ( !ArrayFindNoCase( excludePackages, packageId ) ) {
-				_installPackage( packageId, dependencies[ packageId ], cwd );
+				_installPackage( packageId, dependencies[ packageId ], cwd, overrideVersion );
 				ArrayAppend( containerConfig.installedPackages, packageId );
 			}
 		}
@@ -93,8 +101,16 @@ component {
 		}
 	}
 
-	private void function _installPackage( packageSlug, packageDetail, cwd ) {
+	private void function _installPackage( packageSlug, packageDetail, cwd, overrideVersion ) {
 		var id = ( packageDetail contains ":" ) ? packageDetail : "#packageSlug#@#packageDetail#";
+
+		if ( Len( Trim( arguments.overrideVersion ) ) ) {
+			if ( ListLen( id, "@" ) == 2 ) {
+				id = ListFirst( id, "@" ) & "@" & arguments.overrideVersion;
+			} else if ( !Find( ":", id ) || ListFirst( id, ":" ) == "pixl8" ) {
+				id = id & "@" & arguments.overrideVersion;
+			}
+		}
 
 		packageService.installPackage(
 			  id                         = id
