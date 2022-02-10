@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.3.1
+
+* Force bleeding edge or stable builds of all dependencies when meta package is installed with @be or @stable
+
 ## v2.3.0
 
 * Add concept of pixl8-meta-packages. Allows defining of packages that just install other packages.
