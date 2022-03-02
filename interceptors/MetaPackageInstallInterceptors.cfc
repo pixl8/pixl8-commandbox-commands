@@ -12,13 +12,16 @@ component {
 			var packageSlug       = packageBoxJson.slug                           ?: "";
 			var dependencies      = packageBoxJson[ "pixl8-meta-package" ].dependencies ?: {};
 			var uninstallPackages = packageBoxJson[ "pixl8-meta-package" ].uninstallPackages ?: [];
+			var defaultExcludes   = packageBoxJson[ "pixl8-meta-package" ].defaultExclude ?: [];
+			var profiles          = packageBoxJson[ "pixl8-meta-package" ].profiles ?: {};
 			var containerBoxJson  = packageService.readPackageDescriptorRaw( cwd );
 			var containerConfig   = _readContainerMetaPackageConfig( containerBoxJson, packageSlug );
+			var profileConfig     = _getProfifleConfig( containerConfig, profiles, installArgs.ID );
+			var excludePackages   = _resolveExcludes( defaultExcludes, containerConfig, profileConfig );
 
-
-			_installDependencies( dependencies, containerBoxJson, containerConfig, cwd, job, installArgs.ID );
+			_installDependencies( dependencies, containerBoxJson, containerConfig, cwd, job, installArgs.ID, excludePackages );
 			_uninstallPackages( uninstallPackages, containerBoxJson, cwd, job, installArgs.ID );
-			_stripDependenciesFromContainerBoxJson( dependencies, containerBoxJson, containerConfig, job, installArgs.ID );
+			_stripDependenciesFromContainerBoxJson( dependencies, containerBoxJson, containerConfig, job, installArgs.ID, excludePackages );
 			_markPackageAsInstalled( containerBoxJson, packageBoxJson, installArgs );
 
 			packageService.writePackageDescriptor( containerBoxJson, cwd );
@@ -45,17 +48,17 @@ component {
 	}
 
 	private struct function _readContainerMetaPackageConfig( containerBoxJson, metaPackageSlug ) {
-		containerBoxJson[ "pixl8-meta-packages" ] = containerBoxJson[ "pixl8-meta-packages" ] ?: {};
-		containerBoxJson[ "pixl8-meta-packages" ][ metaPackageSlug ] = containerBoxJson[ "pixl8-meta-packages" ][ metaPackageSlug ] ?: {
-			  "excludePackages"   = []
-			, "installedPackages" = []
-		};
+		var packages = containerBoxJson[ "pixl8-meta-packages" ] = containerBoxJson[ "pixl8-meta-packages" ] ?: {};
+		var package  = packages[ metaPackageSlug ] = packages[ metaPackageSlug ] ?: StructNew( "linked" );
 
-		return containerBoxJson[ "pixl8-meta-packages" ][ metaPackageSlug ];
+		package[ "profile"           ] = package[ "profile"           ] ?: "";
+		package[ "excludePackages"   ] = package[ "excludePackages"   ] ?: [];
+		package[ "installedPackages" ] = package[ "installedPackages" ] ?: [];
+
+		return package;
 	}
 
-	private void function _installDependencies( dependencies, containerBoxJson, containerConfig, cwd, job, metaPackageId ) {
-		var excludePackages = containerConfig.excludePackages ?: [];
+	private void function _installDependencies( dependencies, containerBoxJson, containerConfig, cwd, job, metaPackageId, excludePackages ) {
 		var overrideVersion = "";
 
 		if ( ListLast( arguments.metaPackageId, "@" ) == "be" ) {
@@ -122,8 +125,7 @@ component {
 		);
 	}
 
-	private void function _stripDependenciesFromContainerBoxJson( dependencies, containerBoxJson, containerConfig, job, metaPackageId ) {
-		var excludePackages = containerConfig.excludePackages ?: [];
+	private void function _stripDependenciesFromContainerBoxJson( dependencies, containerBoxJson, containerConfig, job, metaPackageId, excludePackages ) {
 		var anyToStrip = false;
 
 		for( var packageId in arguments.dependencies ) {
@@ -179,5 +181,57 @@ component {
 		DirectoryDelete( installDirectory, true );
 		StructDelete( containerBoxJson.installPaths ?: {}, packageBoxJson.slug );
 		packageService.writePackageDescriptor( containerBoxJson, cwd );
+	}
+
+	private struct function _getProfifleConfig( containerConfig, profiles, metaPackageId ) {
+		if ( !StructCount( profiles ) ) {
+			return {};
+		}
+
+		if ( !Len( Trim( containerConfig.profile ?: "" ) ) || !StructKeyExists( profiles, containerConfig.profile ) ) {
+			containerConfig.profile = _promptForProfile( profiles, metaPackageId );
+		}
+
+		return profiles[ containerConfig.profile ];
+	}
+
+	private string function _promptForProfile( profiles, metaPackageId ) {
+		var promptOptions = [];
+
+		for( var profileId in profiles ) {
+			ArrayAppend( promptOptions, { display=( profiles[ profileId ].title ?: profileId ), value=profileId } );
+		}
+		return getWirebox().getInstance( name="multiSelect" ).init( "Choose an installation profile for the [#metaPackageId#] meta package:" )
+			.options( promptOptions )
+			.required()
+			.ask();
+	}
+
+	private array function _resolveExcludes( defaultExcludes, containerConfig, profileConfig ) {
+		var alreadyInstalled   = containerConfig.installedPackages ?: [];
+		var alreadyExcluded    = containerConfig.excludePackages   ?: [];
+		var alwaysExcluded     = profileConfig.alwaysExclude   ?: [];
+		var defaultIncludes    = profileConfig.defaultIncludes ?: [];
+		var resolved           = Duplicate( alreadyExcluded );
+		var allDefaultExcludes = Duplicate( defaultExcludes );
+
+		ArrayAppend( allDefaultExcludes, ( profileConfig.defaultExclude ?: [] ), true );
+
+		for( var package in allDefaultExcludes ) {
+			if ( !ArrayFindNoCase( defaultIncludes, package ) && !ArrayFindNoCase( resolved, package ) && !ArrayFindNoCase( alreadyInstalled, package ) ) {
+				ArrayAppend( resolved, package );
+			}
+		}
+		for( var package in alwaysExcluded ) {
+			if ( !ArrayFindNoCase( resolved, package ) ) {
+				ArrayAppend( resolved, package );
+			}
+		}
+
+		containerConfig.excludePackages = resolved;
+
+		return resolved;
+
+
 	}
 }
