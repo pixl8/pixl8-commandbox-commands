@@ -214,12 +214,15 @@ component {
 		var defaultIncludes    = profileConfig.defaultIncludes ?: [];
 		var resolved           = Duplicate( alreadyExcluded );
 		var allDefaultExcludes = Duplicate( defaultExcludes );
+		var ignoreDefaults     = ArrayLen( alreadyExcluded ) && !ArrayLen( alreadyInstalled ); // because we already declare our own ignores and we haven't yet made an install...
 
 		ArrayAppend( allDefaultExcludes, ( profileConfig.defaultExclude ?: [] ), true );
 
-		for( var package in allDefaultExcludes ) {
-			if ( !ArrayFindNoCase( defaultIncludes, package ) && !ArrayFindNoCase( resolved, package ) && !ArrayFindNoCase( alreadyInstalled, package ) ) {
-				ArrayAppend( resolved, package );
+		if ( !ignoreDefaults ) {
+			for( var package in allDefaultExcludes ) {
+				if ( !ArrayFindNoCase( defaultIncludes, package ) && !ArrayFindNoCase( resolved, package ) && !ArrayFindNoCase( alreadyInstalled, package ) ) {
+					ArrayAppend( resolved, package );
+				}
 			}
 		}
 		for( var package in alwaysExcluded ) {
