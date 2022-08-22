@@ -73,7 +73,7 @@ component {
 		containerConfig.installedPackages = [];
 		for( var packageId in dependencies ) {
 			if ( !ArrayFindNoCase( excludePackages, packageId ) ) {
-				_installPackage( packageId, dependencies[ packageId ], cwd, overrideVersion );
+				_installPackage( packageId, dependencies[ packageId ], cwd, overrideVersion, job );
 				ArrayAppend( containerConfig.installedPackages, packageId );
 			}
 		}
@@ -104,8 +104,10 @@ component {
 		}
 	}
 
-	private void function _installPackage( packageSlug, packageDetail, cwd, overrideVersion ) {
-		var id = ( packageDetail contains ":" ) ? packageDetail : "#packageSlug#@#packageDetail#";
+	private void function _installPackage( packageSlug, packageDetail, cwd, overrideVersion, job ) {
+		var id        = ( packageDetail contains ":" ) ? packageDetail : "#packageSlug#@#packageDetail#";
+		var isExt     = find( "preside-ext-", arguments.packageSlug );
+		var isGitRepo = isExt ? directoryExists( arguments.cwd & "application/extensions/" & arguments.packageSlug & "/.git" ) : false;
 
 		if ( Len( Trim( arguments.overrideVersion ) ) ) {
 			if ( ListLen( id, "@" ) == 2 ) {
@@ -115,14 +117,18 @@ component {
 			}
 		}
 
-		packageService.installPackage(
-			  id                         = id
-			, save                       = false
-			, saveDev                    = false
-			, production                 = true
-			, currentWorkingDirectory    = arguments.cwd
-			, skipPresidePackageChecking = true
-		);
+		if ( isGitRepo ) {
+			arguments.job.addWarnLog( "#listFirst( id, "@" )# seems to be a Git repository, so will skip package installation." );
+		} else {
+			packageService.installPackage(
+				  id                         = id
+				, save                       = false
+				, saveDev                    = false
+				, production                 = true
+				, currentWorkingDirectory    = arguments.cwd
+				, skipPresidePackageChecking = true
+			);
+		}
 	}
 
 	private void function _stripDependenciesFromContainerBoxJson( dependencies, containerBoxJson, containerConfig, job, metaPackageId, excludePackages ) {
