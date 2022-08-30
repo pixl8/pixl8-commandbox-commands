@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.4.1
+
+Skip box install for meta packages when existing installation is a checked out git repo
+
 ## v2.4.0
 
 Add metapackage support
