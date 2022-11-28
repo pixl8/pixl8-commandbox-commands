@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.5.0
+
+Add helper commands for upgrading/patching meta packages
+
 ## v2.4.1
 
 Skip box install for meta packages when existing installation is a checked out git repo
