@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.6.0
+
+Add helper command to scaffold an e2e test suite using Cypress + Pixl8 internal dependencies
+
 ## v2.5.0
 
 Add helper commands for upgrading/patching meta packages
