@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.6.1
+
+Update version number for better detection of updated versions
+
 ## v2.6.0
 
 Add helper command to scaffold an e2e test suite using Cypress + Pixl8 internal dependencies
