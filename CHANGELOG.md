@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.6.2
+
+Compatibility fix for Commandbox 6
+
 ## v2.6.1
 
 Update version number for better detection of updated versions
