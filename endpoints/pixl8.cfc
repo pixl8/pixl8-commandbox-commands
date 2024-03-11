@@ -26,7 +26,7 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 		return this;
 	}
 
-	public string function resolvePackage( required string package, boolean verbose=false ) {
+	public string function resolvePackage( required string package, string currentworkingdirectory, boolean verbose=false ) {
 		wirebox.getInstance( "interceptorService" ).registerInterceptor( this );
 
 		var job           = wirebox.getInstance( 'interactiveJob' );
