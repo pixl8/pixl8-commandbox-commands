@@ -5,19 +5,20 @@ component {
 // INTERCEPTION LISTENERS
 	public void function onInstall( interceptData ) {
 		if ( _isMetaPackage( interceptData.artifactDescriptor ?: {} ) ) {
-			var job               = interceptData.job                             ?: "";
-			var installArgs       = interceptData.installArgs                     ?: {};
-			var cwd               = installArgs.currentWorkingDirectory           ?: "";
-			var packageBoxJson    = interceptData.artifactDescriptor              ?: {};
-			var packageSlug       = packageBoxJson.slug                           ?: "";
-			var dependencies      = packageBoxJson[ "pixl8-meta-package" ].dependencies ?: {};
-			var uninstallPackages = packageBoxJson[ "pixl8-meta-package" ].uninstallPackages ?: [];
-			var defaultExcludes   = packageBoxJson[ "pixl8-meta-package" ].defaultExclude ?: [];
-			var profiles          = packageBoxJson[ "pixl8-meta-package" ].profiles ?: {};
-			var containerBoxJson  = packageService.readPackageDescriptorRaw( cwd );
-			var containerConfig   = _readContainerMetaPackageConfig( containerBoxJson, packageSlug );
-			var profileConfig     = _getProfifleConfig( containerConfig, profiles, installArgs.ID );
-			var excludePackages   = _resolveExcludes( defaultExcludes, containerConfig, profileConfig );
+			var job                   = interceptData.job                             ?: "";
+			var installArgs           = interceptData.installArgs                     ?: {};
+			var cwd                   = installArgs.currentWorkingDirectory           ?: "";
+			var packageBoxJson        = interceptData.artifactDescriptor              ?: {};
+			var packageSlug           = packageBoxJson.slug                           ?: "";
+			var dependencies          = packageBoxJson[ "pixl8-meta-package" ].dependencies ?: {};
+			var uninstallPackages     = packageBoxJson[ "pixl8-meta-package" ].uninstallPackages ?: [];
+			var defaultExcludes       = packageBoxJson[ "pixl8-meta-package" ].defaultExclude ?: [];
+			var excludeUnlessIncluded = packageBoxJson[ "pixl8-meta-package" ].excludeUnlessIncluded ?: [];
+			var profiles              = packageBoxJson[ "pixl8-meta-package" ].profiles ?: {};
+			var containerBoxJson      = packageService.readPackageDescriptorRaw( cwd );
+			var containerConfig       = _readContainerMetaPackageConfig( containerBoxJson, packageSlug );
+			var profileConfig         = _getProfifleConfig( containerConfig, profiles, installArgs.ID );
+			var excludePackages       = _resolveExcludes( defaultExcludes, containerConfig, profileConfig, excludeUnlessIncluded );
 
 			_installDependencies( dependencies, containerBoxJson, containerConfig, cwd, job, installArgs.ID, excludePackages );
 			_uninstallPackages( uninstallPackages, containerBoxJson, cwd, job, installArgs.ID );
@@ -213,24 +214,27 @@ component {
 			.ask();
 	}
 
-	private array function _resolveExcludes( defaultExcludes, containerConfig, profileConfig ) {
+	private array function _resolveExcludes( defaultExcludes, containerConfig, profileConfig, excludeUnlessIncluded ) {
 		var alreadyInstalled   = containerConfig.installedPackages ?: [];
 		var alreadyExcluded    = containerConfig.excludePackages   ?: [];
 		var alwaysExcluded     = profileConfig.alwaysExclude   ?: [];
 		var defaultIncludes    = profileConfig.defaultIncludes ?: [];
 		var resolved           = Duplicate( alreadyExcluded );
-		var allDefaultExcludes = Duplicate( defaultExcludes );
+		var allExcludes        = [];
 		var ignoreDefaults     = ArrayLen( alreadyExcluded ) && !ArrayLen( alreadyInstalled ); // because we already declare our own ignores and we haven't yet made an install...
 
-		ArrayAppend( allDefaultExcludes, ( profileConfig.defaultExclude ?: [] ), true );
-
+		ArrayAppend( allExcludes, arguments.excludeUnlessIncluded, true );
 		if ( !ignoreDefaults ) {
-			for( var package in allDefaultExcludes ) {
-				if ( !ArrayFindNoCase( defaultIncludes, package ) && !ArrayFindNoCase( resolved, package ) && !ArrayFindNoCase( alreadyInstalled, package ) ) {
-					ArrayAppend( resolved, package );
-				}
+			ArrayAppend( allExcludes, arguments.defaultExcludes, true );
+			ArrayAppend( allExcludes, ( profileConfig.defaultExclude ?: [] ), true );
+		}
+
+		for( var package in allExcludes ) {
+			if ( !ArrayFindNoCase( defaultIncludes, package ) && !ArrayFindNoCase( resolved, package ) && !ArrayFindNoCase( alreadyInstalled, package ) ) {
+				ArrayAppend( resolved, package );
 			}
 		}
+
 		for( var package in alwaysExcluded ) {
 			if ( !ArrayFindNoCase( resolved, package ) ) {
 				ArrayAppend( resolved, package );
