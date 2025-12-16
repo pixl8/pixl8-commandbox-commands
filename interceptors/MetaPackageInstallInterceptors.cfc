@@ -107,8 +107,10 @@ component {
 
 	private void function _installPackage( packageSlug, packageDetail, cwd, overrideVersion, job ) {
 		var id        = ( packageDetail contains ":" ) ? packageDetail : "#packageSlug#@#packageDetail#";
-		var isExt     = find( "preside-ext-", arguments.packageSlug );
-		var isGitRepo = isExt ? directoryExists( arguments.cwd & "application/extensions/" & arguments.packageSlug & "/.git" ) : false;
+		var isExt     = Find( "preside-ext-", arguments.packageSlug );
+		var isPreside = arguments.packageSlug == "presidecms";
+		var isGitRepo = isExt && DirectoryExists( arguments.cwd & "application/extensions/" & arguments.packageSlug & "/.git" );
+		    isGitRepo = isGitRepo || ( isPreside && DirectoryExists( arguments.cwd & "preside/.git" ) );
 
 		if ( Len( Trim( arguments.overrideVersion ) ) ) {
 			if ( ListLen( id, "@" ) == 2 ) {
