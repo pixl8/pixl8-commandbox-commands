@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.6.5
+
+Skip box install of Preside when existing installation is a checked out git repo
+
+## v2.6.4
+
+Update skeleton npm packages and commit package lock
+
+## v2.6.3
+
+Allow meta packages to workaround an issue with default excludes without breaking compat. Going forward, we can declare packages to exclude unless explicitly included
+
 ## v2.6.2
 
 Compatibility fix for Commandbox 6
