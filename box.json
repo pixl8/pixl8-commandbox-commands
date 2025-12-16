@@ -1,19 +1,19 @@
 {
     "name":"Pixl8 CommandBox Commands",
-    "version":"2.6.1",
-    "location":"pixl8/pixl8-commandbox-commands.git#v2.6.1",
+    "version":"2.6.6",
+    "location":"pixl8/pixl8-commandbox-commands.git#v2.6.6",
     "author":"Pixl8 Interactive",
     "type":"commandbox-modules",
-    "homepage":"https://gitlab.pixl8.london/utilities/pixl8-commandbox-commands",
+    "homepage":"https://github.com/pixl8/pixl8-commandbox-commands",
     "repository":{
         "type":"git",
-        "URL":"https://gitlab.pixl8.london/utilities/pixl8-commandbox-commands"
+        "URL":"https://github.com/pixl8/pixl8-commandbox-commands"
     },
     "slug":"pixl8-commandbox-commands",
     "shortDescription":"Commands for internal Pixl8 devops.",
     "keywords":"Commands",
     "private":true,
-    "projectURL":"https://gitlab.pixl8.london/utilities/pixl8-commandbox-commands",
+    "projectURL":"https://github.com/pixl8/pixl8-commandbox-commands",
     "ignore":[
         ".git/*",
         ".gitignore",
