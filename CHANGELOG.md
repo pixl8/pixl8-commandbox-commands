@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.6.6
+
+Update version in box.json
+
 ## v2.6.5
 
 Skip box install of Preside when existing installation is a checked out git repo
