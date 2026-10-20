@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.7.1
+
+Remove `pixl8 setup context`
+
 ## v2.7.0
 
 Added `pixl8 setup context` command for help with setting up our agent context files in a project.
