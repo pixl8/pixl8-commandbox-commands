@@ -16,7 +16,7 @@ component accessors="true" implements="commandbox.system.endpoints.IEndpoint" {
 	property name="artifactService"  inject="ArtifactService";
 	property name='wirebox'          inject='wirebox';
 	property name="endpointService"  inject="endpointService";
-	property name="fileResolver"     inject="commandbox.system.endpoints.file";
+	property name="fileResolver"     inject="commandbox.system.endpoints.File";
 
 	property name="namePrefixes" type="string";
 

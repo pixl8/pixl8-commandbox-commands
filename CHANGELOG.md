@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.7.2
+
+Fix case sensitivity issue with dependency for Commandbox 7
+
 ## v2.7.1
 
 Remove `pixl8 setup context`
