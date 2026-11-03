@@ -18,7 +18,7 @@ component {
 			throw( "No endpoint has been registered for the pixl8 package provider. Use the 'pixl8 mis setendpoint' command to register your endpoint.", 'endpointException' );
 		}
 
-		http url="#endpoint.reReplace( "/^", "" )#/api/forgebox/package/#arguments.slug#/" method="GET" timeout=30 username=accessKey result="result" throwonerror=true {
+		http url="#endpoint.reReplace( "/^", "" )#/api/forgebox/package/#arguments.slug#/" method="GET" timeout=30 username=accessKey password=accessKey result="result" throwonerror=true {
 			if ( Len( Trim( arguments.version ) ) ) {
 				httpparam name="version" type="url" value=arguments.version;
 			}
@@ -58,7 +58,7 @@ component {
 			}
 		}
 
-		http url="#endpoint.reReplace( "/^", "" )#/api/forgebox/publish/" method="POST" timeout=30 username=accessKey result="result" {
+		http url="#endpoint.reReplace( "/^", "" )#/api/forgebox/publish/" method="POST" timeout=30 username=accessKey password=accessKey result="result" {
 			httpparam type="formfield" name="boxjson"     value=boxjson;
 			httpparam type="formfield" name="storagepath" value=arguments.storagePath;
 			httpparam type="formfield" name="readme"      value=readme;
@@ -80,7 +80,7 @@ component {
 			throw( "No endpoint has been registered for the pixl8 package provider. Use the 'pixl8 mis setendpoint' command to register your endpoint.", 'endpointException' );
 		}
 
-		http url="#endpoint.reReplace( "/^", "" )#/api/forgebox/checkpackages/" method="POST" timeout=30 username=accessKey result="result" {
+		http url="#endpoint.reReplace( "/^", "" )#/api/forgebox/checkpackages/" method="POST" timeout=30 username=accessKey password=accessKey result="result" {
 			httpparam type="body" value=SerializeJson( arguments.packages );
 		}
 
